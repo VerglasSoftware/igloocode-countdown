@@ -1,0 +1,50 @@
+name: Deploy IglooCode countdown
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Deploy to AWS
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js (for zipping Lambda)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install zip
+        run: sudo apt-get install -y zip
+
+      - name: Zip Lambda function
+        run: zip -r lambda.zip lambda/
+
+      - name: Configure AWS credentials (via OIDC)
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::205930631235:role/GitHub
+          role-duration-seconds: 14390
+          aws-region: eu-west-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8.0
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        env:
+          TF_VAR_discord_bot_token: ${{ secrets.DISCORD_BOT_TOKEN }}
+          TF_VAR_discord_channel_id: ${{ secrets.DISCORD_CHANNEL_ID }}
