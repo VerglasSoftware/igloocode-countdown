@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 resource "aws_iam_role" "lambda_exec" {
-  name = "lambda_discord_bot_exec"
+  name = "lambda_discord_bot_exec2"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -29,7 +29,7 @@ data "archive_file" "lambda_zip" {
 }
 
 resource "aws_lambda_function" "discord_updater" {
-  function_name = "discord_channel_updater"
+  function_name = "discord_channel_updater2"
   role          = aws_iam_role.lambda_exec.arn
   handler       = "index.handler"
   runtime       = "nodejs18.x"
