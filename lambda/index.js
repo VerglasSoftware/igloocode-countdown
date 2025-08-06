@@ -1,34 +1,26 @@
-const https = require('https');
-
 exports.handler = async () => {
   const channelId = process.env.CHANNEL_ID;
   const botToken = process.env.BOT_TOKEN;
   const daysLeft = getDaysLeft();
 
-  const data = JSON.stringify({
-    name: `⏳ days until igloocode: ${daysLeft}`
-  });
-
-  const options = {
-    hostname: 'discord.com',
-    path: `/api/v10/channels/${channelId}`,
+  const response = await fetch(`https://discord.com/api/v10/channels/${channelId}`, {
     method: 'PATCH',
     headers: {
       'Authorization': `Bot ${botToken}`,
       'Content-Type': 'application/json',
-      'Content-Length': data.length
-    }
-  };
-
-  return new Promise((resolve, reject) => {
-    const req = https.request(options, res => {
-      res.on('data', d => process.stdout.write(d));
-      res.on('end', resolve);
-    });
-    req.on('error', reject);
-    req.write(data);
-    req.end();
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      name: `⏳ days until igloocode: ${daysLeft}`,
+    }),
   });
+
+  const body = await response.json();
+
+  return {
+    statusCode: response.status,
+    body: JSON.stringify(body),
+  };
 };
 
 function getDaysLeft() {
